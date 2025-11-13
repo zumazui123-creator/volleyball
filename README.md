@@ -63,10 +63,18 @@ pip install -e .
 
 ## Basic Usage
 
-After installing from the repo, you can play the game against the baseline agent by running:
+After installing from the repo, you can test the environment by running:
 
 ```
-python test_state.py
+python scripts/test/test_state.py
+```
+
+## Playing the Game
+
+You can play the game against the baseline agent by running:
+
+```
+python scripts/play_game.py
 ```
 
 <p align="left">
@@ -76,12 +84,25 @@ python test_state.py
 
 You can control the agent on the right using the arrow keys, or the agent on the left using (A, W, D).
 
-Similarly, `test_pixel.py` allows you to play in the pixelated environment, and `test_atari.py` lets you play the game by observing the preprocessed stacked frames (84px x 84px x 4 frames) typically done for Atari RL agents:
+Similarly, `scripts/test/test_pixel.py` allows you to play in the pixelated environment, and `scripts/test/test_atari.py` lets you play the game by observing the preprocessed stacked frames (84px x 84px x 4 frames) typically done for Atari RL agents:
 
 <p align="left">
   <img width="50%" src="https://media.giphy.com/media/W3NItV6PINmbgUFKPf/giphy.gif"></img>
   <br/><i>Atari gym wrappers combine 4 frames as one observation.</i>
 </p>
+
+## Training Agents
+
+The `training` directory contains scripts for training agents using different methods like PPO, CMA-ES, and GA.
+The `TRAINING.md` file provides a detailed tutorial on how to train agents using these methods.
+
+Here is a summary of the training process:
+
+*   **Train against baseline policy:** You can train an agent to play against the built-in baseline policy using PPO or CMA-ES.
+*   **Self-Play:** You can train agents to play against a version of itself, so they can become incrementally better players over time.
+*   **Cooperative Self-Play:** You can train agents to cooperate with each other to achieve some mutually beneficial game state.
+
+For more details, please refer to the [TRAINING.md](docs/TRAINING.md) tutorial.
 
 ## Environments
 
