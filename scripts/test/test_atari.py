@@ -2,15 +2,15 @@
 Pixel observation environment (atari compatible example, w/ 84x84 resized 4-frame stack.
 """
 
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
 import slimevolleygym
-from pyglet.window import key
 from time import sleep
 import cv2
-from gym.envs.classic_control import rendering as rendering
-from slimevolleygym import FrameStack, render_atari
+import pygame
+from slimevolleygym.slimevolley import FrameStack
+from slimevolleygym.utils import render_atari
 
 class NoopResetEnv(gym.Wrapper):
   def __init__(self, env, noop_max=30):
@@ -140,27 +140,17 @@ def toAtariAction(action):
     return 3
   return 0
 
-# simulate typical Atari Env:
 if __name__=="__main__":
 
   manualAction = [0, 0, 0] # forward, backward, jump
   manualMode = False
 
-  # taken from https://github.com/openai/gym/blob/master/gym/envs/box2d/car_racing.py
-  def key_press(k, mod):
-    global manualMode, manualAction
-    if k == key.LEFT:  manualAction[0] = 1
-    if k == key.RIGHT: manualAction[1] = 1
-    if k == key.UP:    manualAction[2] = 1
-    if (k == key.LEFT or k == key.RIGHT or k == key.UP): manualMode = True
-
-  def key_release(k, mod):
-    global manualMode, manualAction
-    if k == key.LEFT:  manualAction[0] = 0
-    if k == key.RIGHT: manualAction[1] = 0
-    if k == key.UP:    manualAction[2] = 0
-
-  viewer = rendering.SimpleImageViewer(maxwidth=2160)
+  # Pygame setup
+  pygame.init()
+  screen_width = 2160 // 2
+  screen_height = 1080 // 2
+  screen = pygame.display.set_mode((screen_width, screen_height))
+  pygame.display.set_caption("Slime Volley Atari")
 
   env = gym.make("SlimeVolleyNoFrameskip-v0")
   # typical Atari processing:
@@ -172,33 +162,43 @@ if __name__=="__main__":
 
   obs = env.reset()
 
-  for t in range(10000):
+  done = False
+  while not done:
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:  manualAction[0] = 1
+            if event.key == pygame.K_RIGHT: manualAction[1] = 1
+            if event.key == pygame.K_UP:    manualAction[2] = 1
+            if (event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_UP): manualMode = True
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT:  manualAction[0] = 0
+            if event.key == pygame.K_RIGHT: manualAction[1] = 0
+            if event.key == pygame.K_UP:    manualAction[2] = 0
 
     if manualMode: # override with keyboard
-      #action = toAtariAction(manualAction) # not needed anymore
-      action = manualAction # now just work w/ multibinary if it is not scalar
+      action = manualAction
     else:
       action = 0 #env.action_space.sample() # your agent here (this takes random actions)
 
-    obs, reward, done, info = env.step(action)
+    obs, reward, terminated, truncated, info = env.step(action)
+    done = terminated or truncated
 
     if reward > 0 or reward < 0:
       print("reward", reward)
       manualMode = False
 
-    if reward > 0 or reward < 0:
-      print(t, reward)
-
     render_img = render_atari(obs)
-    viewer.imshow(render_img)
+    render_img = cv2.resize(render_img, (screen_width, screen_height))
+    surf = pygame.surfarray.make_surface(render_img)
+    screen.blit(surf, (0, 0))
+    pygame.display.flip()
     sleep(0.08)
-
-    if t == 0:
-      viewer.window.on_key_press = key_press
-      viewer.window.on_key_release = key_release
 
     if done:
       obs = env.reset()
 
-  viewer.close()
+  pygame.quit()
   env.close()
