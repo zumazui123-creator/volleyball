@@ -104,6 +104,58 @@ Here is a summary of the training process:
 
 For more details, please refer to the [TRAINING.md](docs/TRAINING.md) tutorial.
 
+## For Young Coders: Create Your Own AI Player!
+
+Hey young coders! Want to make your own smart player for Slime Volleyball? It's super fun and easier than you think!
+
+An **AI player** (or "agent") is like a robot brain that decides what to do in the game. Instead of you pressing keys, your code tells the player to jump, move left, or move right.
+
+Here’s how you can start making your own AI:
+
+1.  **Understand the Game:** Play the game a few times using the keyboard (`python scripts/play_game.py`). See how the ball moves, how your player jumps, and how the opponent plays. What makes a good move?
+
+2.  **Look at the Code:** Open the file `src/slimevolleygym/policy.py`. This file has the "brain" of the computer player you play against. It's called `BaselinePolicy`.
+
+3.  **Make Your Own Simple Brain:**
+    *   You can create a new Python file, for example, `my_agent.py` in the `scripts` folder.
+    *   Inside `my_agent.py`, you'll need to write a function that looks at the game (`obs` for "observation") and decides what action to take.
+    *   A very simple AI might just try to jump when the ball is close!
+
+    Here’s a super simple idea for your `my_agent.py`:
+
+    ```python
+    import numpy as np
+
+    class MySimpleAgent:
+        def predict(self, obs):
+            # obs is a list of numbers that tell you about the game
+            # obs[4] is the ball's x-position, obs[5] is the ball's y-position
+            
+            action = [0, 0, 0] # [move_left, move_right, jump]
+
+            # If the ball is high up, maybe jump!
+            if obs[5] > 0.5: # This is just an example number, try different ones!
+                action[2] = 1 # Make the player jump
+
+            # You can add more rules here!
+            # Like, if the ball is to the left, move left:
+            # if obs[4] < 0:
+            #     action[0] = 1
+
+            return action
+    ```
+
+4.  **Try Your Agent in the Game:**
+    *   You'll need to tell the game to use your agent instead of the `BaselinePolicy`. This is a bit more advanced, but you can look at `scripts/play_game.py` to see how `BaselinePolicy` is loaded. You would replace `slimevolleygym.BaselinePolicy()` with `MySimpleAgent()`.
+
+5.  **Experiment and Have Fun!**
+    *   Change the numbers in your rules.
+    *   Add new rules (e.g., "if the ball is very low, don't jump").
+    *   Can you make an agent that beats the computer?
+
+Don't worry if it's hard at first. Programming is all about trying things out and learning from your mistakes. The most important thing is to have fun and be creative!
+
+
 ## Environments
 
 There are two types of environments: state-space observation or pixel observations:
