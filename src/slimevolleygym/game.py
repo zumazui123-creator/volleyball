@@ -3,7 +3,6 @@ import numpy as np
 from .config import *
 from .agent import Agent
 import pygame
-from .config import toX, toY, toP
 
 class DelayScreen:
   """ initially the ball is held still for INIT_DELAY_FRAMES(30) frames """
@@ -29,8 +28,8 @@ class Particle:
     self.vy = vy
     self.r = r
     self.c = c
-  def display(self, canvas):
-    pygame.draw.circle(canvas, self.c, (int(toX(self.x)), int(toY(self.y))), int(toP(self.r)))
+  def display(self, env, canvas):
+    pygame.draw.circle(canvas, self.c, (int(env.toX(self.x)), int(env.toY(self.y))), int(env.toP(self.r)))
     return canvas
   def move(self):
     self.prev_x = self.x
@@ -144,8 +143,8 @@ class Wall:
     self.w = w;
     self.h = h;
     self.c = c
-  def display(self, canvas):
-    pygame.draw.rect(canvas, self.c, (int(toX(self.x-self.w/2)), int(toY(self.y+self.h/2)), int(toP(self.w)), int(toP(self.h))))
+  def display(self, env, canvas):
+    pygame.draw.rect(canvas, self.c, (int(env.toX(self.x-self.w/2)), int(env.toY(self.y+self.h/2)), int(env.toP(self.w)), int(env.toP(self.h))))
     return canvas
 
 class Game:
@@ -232,17 +231,17 @@ class Game:
     self.agent_left.updateState(self.ball, self.agent_right)
     self.agent_right.updateState(self.ball, self.agent_left)
 
-  def display(self, canvas):
+  def display(self, env, canvas):
     # background color
     # if PIXEL_MODE is True, canvas is an RGB array.
     # if PIXEL_MODE is False, canvas is viewer object
     # canvas = create_canvas(canvas, c=BACKGROUND_COLOR)
-    canvas = self.fence.display(canvas)
-    canvas = self.fenceStub.display(canvas)
-    canvas = self.agent_left.display(canvas, self.ball.x, self.ball.y)
-    canvas = self.agent_right.display(canvas, self.ball.x, self.ball.y)
-    canvas = self.ball.display(canvas)
-    canvas = self.ground.display(canvas)
+    canvas = self.fence.display(env, canvas)
+    canvas = self.fenceStub.display(env, canvas)
+    canvas = self.agent_left.display(env, canvas, self.ball.x, self.ball.y)
+    canvas = self.agent_right.display(env, canvas, self.ball.x, self.ball.y)
+    canvas = self.ball.display(env, canvas)
+    canvas = self.ground.display(env, canvas)
     return canvas
   def betweenGameControl(self):
     agent = [self.agent_left, self.agent_right]

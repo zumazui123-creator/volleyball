@@ -65,14 +65,10 @@ LIVES_OFFSET_Y = 1.5
 LIVES_SPACING = 2.0
 LIVES_RADIUS = 0.5
 
+# Policy constants
+ACTION_THRESHOLD = 0.75
 
-# conversion from space to pixels (allows us to render to diff resolutions)
-def toX(x):
-  return (x+REF_W/2)*FACTOR
-def toP(x):
-  return (x)*FACTOR
-def toY(y):
-  return WINDOW_HEIGHT - y*FACTOR
+
 
 def half_circle(surface, x, y, r, color, dir):
     # Draw a full circle

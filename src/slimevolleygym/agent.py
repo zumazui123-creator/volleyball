@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from .config import *
-from .config import half_circle, toX, toY, toP
+from .config import half_circle
 import pygame.draw
 
 class RelativeState:
@@ -112,16 +112,16 @@ class Agent:
   def getObservation(self):
     return self.state.getObservation()
 
-  def display(self, canvas, bx, by):
-    self._draw_body(canvas)
-    self._draw_eyes(canvas, bx, by)
-    self._draw_lives(canvas)
+  def display(self, env, canvas, bx, by):
+    self._draw_body(env, canvas)
+    self._draw_eyes(env, canvas, bx, by)
+    self._draw_lives(env, canvas)
     return canvas
 
-  def _draw_body(self, canvas):
-    half_circle(canvas, toX(self.x), toY(self.y), toP(self.r), color=self.c, dir=self.dir)
+  def _draw_body(self, env, canvas):
+    half_circle(canvas, env.toX(self.x), env.toY(self.y), env.toP(self.r), color=self.c, dir=self.dir)
 
-  def _draw_eyes(self, canvas, bx, by):
+  def _draw_eyes(self, env, canvas, bx, by):
     angle = math.pi * RIGHT_AGENT_ANGLE / 180
     if self.dir == 1:
         angle = math.pi * LEFT_AGENT_ANGLE / 180
@@ -145,18 +145,18 @@ class Agent:
 
     # eye
     pygame.draw.circle(canvas, (255, 255, 255),
-                       (int(toX(eye_x_offset)), int(toY(eye_y_offset))),
-                       int(toP(self.r * EYE_RADIUS_FACTOR)))
+                       (int(env.toX(eye_x_offset)), int(env.toY(eye_y_offset))),
+                       int(env.toP(self.r * EYE_RADIUS_FACTOR)))
     # pupil
     pygame.draw.circle(canvas, (0, 0, 0),
-                       (int(toX(eye_x_offset + pupil_x_offset * PUPIL_OFFSET_FACTOR * self.r)),
-                        int(toY(eye_y_offset + pupil_y_offset * PUPIL_OFFSET_FACTOR * self.r))),
-                       int(toP(self.r * PUPIL_RADIUS_FACTOR)))
+                       (int(env.toX(eye_x_offset + pupil_x_offset * PUPIL_OFFSET_FACTOR * self.r)),
+                        int(env.toY(eye_y_offset + pupil_y_offset * PUPIL_OFFSET_FACTOR * self.r))),
+                       int(env.toP(self.r * PUPIL_RADIUS_FACTOR)))
 
-  def _draw_lives(self, canvas):
+  def _draw_lives(self, env, canvas):
     for i in range(1, self.life):
         x_pos = self.dir * (REF_W / 2 + LIVES_OFFSET_X - i * LIVES_SPACING)
         y_pos = LIVES_OFFSET_Y
         pygame.draw.circle(canvas, COIN_COLOR,
-                           (int(toX(x_pos)), int(WINDOW_HEIGHT - toY(y_pos))),
-                           int(toP(LIVES_RADIUS)))
+                           (int(env.toX(x_pos)), int(env.toY(y_pos))),
+                           int(env.toP(LIVES_RADIUS)))

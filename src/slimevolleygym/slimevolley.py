@@ -26,21 +26,6 @@ from .config import *
 
 np.set_printoptions(threshold=20, precision=3, suppress=True, linewidth=200)
 
-# by default, don't load rendering (since we want to use it in headless cloud machines)
-def setPixelObsMode():
-  """
-  used for experimental pixel-observation mode
-  note: new dim's chosen to be PIXEL_SCALE (2x) as Pixel Obs dims (will be downsampled)
-
-  also, both agent colors are identical, to potentially facilitate multiagent
-  """
-  global WINDOW_WIDTH, WINDOW_HEIGHT, FACTOR, AGENT_LEFT_COLOR, AGENT_RIGHT_COLOR, PIXEL_MODE
-  PIXEL_MODE = True
-  WINDOW_WIDTH = PIXEL_WIDTH * PIXEL_SCALE
-  WINDOW_HEIGHT = PIXEL_HEIGHT * PIXEL_SCALE
-  FACTOR = WINDOW_WIDTH / REF_W
-  AGENT_LEFT_COLOR = PIXEL_AGENT_LEFT_COLOR
-  AGENT_RIGHT_COLOR = PIXEL_AGENT_RIGHT_COLOR
 
 def upsize_image(img):
   return cv2.resize(img, (PIXEL_WIDTH * PIXEL_SCALE, PIXEL_HEIGHT * PIXEL_SCALE), interpolation=cv2.INTER_NEAREST)
@@ -149,6 +134,10 @@ class SlimeVolleyEnv(gym.Env):
     self.t = 0
     self.t_limit = 3000
 
+    self.window_width = WINDOW_WIDTH
+    self.window_height = WINDOW_HEIGHT
+    self.factor = self.window_width / REF_W
+
     #self.action_space = spaces.Box(0, 1.0, shape=(3,))
     if self.atari_mode:
       self.action_space = spaces.Discrete(6)
@@ -156,7 +145,7 @@ class SlimeVolleyEnv(gym.Env):
       self.action_space = spaces.MultiBinary(3)
 
     if self.from_pixels:
-      setPixelObsMode()
+      self._set_pixel_obs_mode()
       self.observation_space = spaces.Box(low=0, high=255,
         shape=(PIXEL_HEIGHT, PIXEL_WIDTH, 3), dtype=np.uint8)
     else:
@@ -176,6 +165,21 @@ class SlimeVolleyEnv(gym.Env):
 
     # another avenue to override the built-in AI's action, going past many env wraps:
     self.otherAction = None
+
+  def _set_pixel_obs_mode(self):
+    self.from_pixels = True
+    self.window_width = PIXEL_WIDTH * PIXEL_SCALE
+    self.window_height = PIXEL_HEIGHT * PIXEL_SCALE
+    self.factor = self.window_width / REF_W
+
+  def toX(self, x):
+    return (x + REF_W / 2) * self.factor
+
+  def toP(self, x):
+    return x * self.factor
+
+  def toY(self, y):
+    return self.window_height - y * self.factor
 
   def seed(self, seed=None):
     self.np_random, seed = seeding.np_random(seed)
@@ -263,13 +267,13 @@ class SlimeVolleyEnv(gym.Env):
   def render(self, mode='human', close=False):
     if self.screen is None:
         pygame.init()
-        self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.screen = pygame.display.set_mode((self.window_width, self.window_height))
         self.clock = pygame.time.Clock()
 
-    canvas = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+    canvas = pygame.Surface((self.window_width, self.window_height))
     canvas.fill(BACKGROUND_COLOR)
 
-    self.game.display(canvas)
+    self.game.display(self, canvas)
 
     if mode == 'human':
         self.screen.blit(canvas, (0, 0))
@@ -349,62 +353,6 @@ class FrameStack(gym.Wrapper):
     assert len(self.frames) == self.n_frames
     return np.concatenate(list(self.frames), axis=2)
 
-#####################
-# helper functions: #
-#####################
-
-def multiagent_rollout(env, policy_right, policy_left, render_mode=False):
-  """
-  play one agent vs the other in modified gym-style loop.
-  important: returns the score from perspective of policy_right.
-  """
-  obs_right = env.reset()
-  obs_left = obs_right # same observation at the very beginning for the other agent
-
-  done = False
-  total_reward = 0
-  t = 0
-
-  while not done:
-
-    action_right = policy_right.predict(obs_right)
-    action_left = policy_left.predict(obs_left)
-
-    # uses a 2nd (optional) parameter for step to put in the other action
-    # and returns the other observation in the 4th optional "info" param in gym's step()
-    obs_right, reward, done, info = env.step(action_right, action_left)
-    obs_left = info['otherObs']
-
-    total_reward += reward
-    t += 1
-
-    if render_mode:
-      env.render()
-
-  return total_reward, t
-
-def render_atari(obs):
-  """
-  Helper function that takes in a processed obs (84,84,4)
-  Useful for visualizing what an Atari agent actually *sees*
-  Outputs in Atari visual format (Top: resized to orig dimensions, buttom: 4 frames)
-  """
-  tempObs = []
-  obs = np.copy(obs)
-  for i in range(4):
-    if i == 3:
-      latest = np.copy(obs[:, :, i])
-    if i > 0: # insert vertical lines
-      obs[:, 0, i] = 141
-    tempObs.append(obs[:, :, i])
-  latest = np.expand_dims(latest, axis=2)
-  latest = np.concatenate([latest*255.0] * 3, axis=2).astype(np.uint8)
-  latest = cv2.resize(latest, (84 * 8, 84 * 4), interpolation=cv2.INTER_NEAREST)
-  tempObs = np.concatenate(tempObs, axis=1)
-  tempObs = np.expand_dims(tempObs, axis=2)
-  tempObs = np.concatenate([tempObs*255.0] * 3, axis=2).astype(np.uint8)
-  tempObs = cv2.resize(tempObs, (84 * 8, 84 * 2), interpolation=cv2.INTER_NEAREST)
-  return np.concatenate([latest, tempObs], axis=0)
 
 ####################
 # Reg envs for gym #
@@ -430,101 +378,3 @@ register(
     entry_point='slimevolleygym.slimevolley:SlimeVolleySurvivalAtariEnv'
 )
 
-if __name__=="__main__":
-  """
-  Example of how to use Gym env, in single or multiplayer setting
-
-  Humans can override controls:
-
-  left Agent:
-  W - Jump
-  A - Left
-  D - Right
-
-  right Agent:
-  Up Arrow, Left Arrow, Right Arrow
-  """
-
-  if RENDER_MODE:
-    from pyglet.window import key
-    from time import sleep
-
-  manualAction = [0, 0, 0] # forward, backward, jump
-  otherManualAction = [0, 0, 0]
-  manualMode = False
-  otherManualMode = False
-
-  # taken from https://github.com/openai/gym/blob/master/gym/envs/box2d/car_racing.py
-  def key_press(k, mod):
-    global manualMode, manualAction, otherManualMode, otherManualAction
-    if k == key.LEFT:  manualAction[0] = 1
-    if k == key.RIGHT: manualAction[1] = 1
-    if k == key.UP:    manualAction[2] = 1
-    if (k == key.LEFT or k == key.RIGHT or k == key.UP): manualMode = True
-
-    if k == key.D:     otherManualAction[0] = 1
-    if k == key.A:     otherManualAction[1] = 1
-    if k == key.W:     otherManualAction[2] = 1
-    if (k == key.D or k == key.A or k == key.W): otherManualMode = True
-
-  def key_release(k, mod):
-    global manualMode, manualAction, otherManualMode, otherManualAction
-    if k == key.LEFT:  manualAction[0] = 0
-    if k == key.RIGHT: manualAction[1] = 0
-    if k == key.UP:    manualAction[2] = 0
-    if k == key.D:     otherManualAction[0] = 0
-    if k == key.A:     otherManualAction[1] = 0
-    if k == key.W:     otherManualAction[2] = 0
-
-  policy = BaselinePolicy() # defaults to use RNN Baseline for player
-
-  env = SlimeVolleyEnv()
-  env.seed(np.random.randint(0, 10000))
-  #env.seed(721)
-
-  if RENDER_MODE:
-    env.render()
-    env.viewer.window.on_key_press = key_press
-    env.viewer.window.on_key_release = key_release
-
-  obs = env.reset()
-
-  steps = 0
-  total_reward = 0
-  action = np.array([0, 0, 0])
-
-  done = False
-
-  while not done:
-
-    if manualMode: # override with keyboard
-      action = manualAction
-    else:
-      action = policy.predict(obs)
-
-    if otherManualMode:
-      otherAction = otherManualAction
-      obs, reward, done, _ = env.step(action, otherAction)
-    else:
-      obs, reward, done, _ = env.step(action)
-
-    if reward > 0 or reward < 0:
-      print("reward", reward)
-      manualMode = False
-      otherManualMode = False
-
-    total_reward += reward
-
-    if RENDER_MODE:
-      env.render()
-      sleep(0.01)
-
-    # make the game go slower for human players to be fair to humans.
-    if (manualMode or otherManualMode):
-      if PIXEL_MODE:
-        sleep(0.01)
-      else:
-        sleep(0.02)
-
-  env.close()
-  print("cumulative score", total_reward)
