@@ -24,7 +24,7 @@ def softmax(x):
 def sample(p):
   return (np.random.rand(*p.shape) < p).astype(float)
 
-Game = namedtuple('Game', ['env_name', 'time_factor', 'input_size', 'output_size', 'layers', 'activation', 'noise_bias', 'output_noise', 'rnn_mode'])
+from .config import Game
 
 
 

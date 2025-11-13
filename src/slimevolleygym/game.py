@@ -2,172 +2,302 @@ import math
 import numpy as np
 from .config import *
 from .agent import Agent
+from typing import Optional
 import pygame
 
 class DelayScreen:
   """ initially the ball is held still for INIT_DELAY_FRAMES(30) frames """
-  def __init__(self, life=INIT_DELAY_FRAMES):
+  def __init__(self, life: int = INIT_DELAY_FRAMES):
     self.life = 0
     self.reset(life)
-  def reset(self, life=INIT_DELAY_FRAMES):
+  def reset(self, life: int = INIT_DELAY_FRAMES) -> None:
     self.life = life
-  def status(self):
+  def status(self) -> bool:
     if (self.life == 0):
       return True
     self.life -= 1
     return False
 
 class Particle:
+
   """ used for the ball, and also for the round stub above the fence """
-  def __init__(self, x, y, vx, vy, r, c):
+
+  def __init__(self, x: float, y: float, vx: float, vy: float, r: float, c: tuple):
+
     self.x = x
+
     self.y = y
+
     self.prev_x = self.x
+
     self.prev_y = self.y
+
     self.vx = vx
+
     self.vy = vy
+
     self.r = r
+
     self.c = c
-  def display(self, env, canvas):
+
+  def display(self, env, canvas: pygame.Surface) -> pygame.Surface:
+
     pygame.draw.circle(canvas, self.c, (int(env.toX(self.x)), int(env.toY(self.y))), int(env.toP(self.r)))
+
     return canvas
-  def move(self):
+
+  def move(self) -> None:
+
     self.prev_x = self.x
+
     self.prev_y = self.y
+
     self.x += self.vx * TIMESTEP
+
     self.y += self.vy * TIMESTEP
-  def applyAcceleration(self, ax, ay):
+
+  def applyAcceleration(self, ax: float, ay: float) -> None:
+
     self.vx += ax * TIMESTEP
+
     self.vy += ay * TIMESTEP
-  def checkEdges(self):
+
+  def checkEdges(self) -> int:
+
     self._check_horizontal_bounds()
+
     score = self._check_vertical_bounds()
+
     if score != NO_SCORE:
+
         return score
+
     self._check_fence_collision()
+
     return NO_SCORE
 
-  def _check_horizontal_bounds(self):
+
+
+  def _check_horizontal_bounds(self) -> None:
+
     if self.x <= (self.r - REF_W / 2):
+
         self.vx *= -FRICTION
+
         self.x = self.r - REF_W / 2 + NUDGE * TIMESTEP
 
+
+
     if self.x >= (REF_W / 2 - self.r):
+
         self.vx *= -FRICTION
+
         self.x = REF_W / 2 - self.r - NUDGE * TIMESTEP
 
-  def _check_vertical_bounds(self):
+
+
+  def _check_vertical_bounds(self) -> int:
+
     if self.y <= (self.r + REF_U):
+
         self.vy *= -FRICTION
+
         self.y = self.r + REF_U + NUDGE * TIMESTEP
+
         if self.x <= 0:
+
             return BALL_SCORE_LEFT
+
         else:
+
             return BALL_SCORE_RIGHT
+
     if self.y >= (REF_H - self.r):
+
         self.vy *= -FRICTION
+
         self.y = REF_H - self.r - NUDGE * TIMESTEP
+
     return NO_SCORE
 
-  def _check_fence_collision(self):
+
+
+  def _check_fence_collision(self) -> None:
+
     if (self.x <= (REF_WALL_WIDTH / 2 + self.r)) and (self.prev_x > (REF_WALL_WIDTH / 2 + self.r)) and (self.y <= REF_WALL_HEIGHT):
+
         self.vx *= -FRICTION
+
         self.x = REF_WALL_WIDTH / 2 + self.r + NUDGE * TIMESTEP
 
+
+
     if (self.x >= (-REF_WALL_WIDTH / 2 - self.r)) and (self.prev_x < (-REF_WALL_WIDTH / 2 - self.r)) and (self.y <= REF_WALL_HEIGHT):
+
         self.vx *= -FRICTION
+
         self.x = -REF_WALL_WIDTH / 2 - self.r - NUDGE * TIMESTEP
 
-  def getDist2(self, p): # returns distance squared from p
+  def getDist2(self, p: "Particle") -> float: # returns distance squared from p
+
     dy = p.y - self.y
+
     dx = p.x - self.x
+
     return (dx*dx+dy*dy)
-  def isColliding(self, p): # returns true if it is colliding w/ p
+
+  def isColliding(self, p: "Particle") -> bool: # returns true if it is colliding w/ p
+
     r = self.r+p.r
+
     return (r*r > self.getDist2(p)) # if distance is less than total radius, then colliding.
-  def bounce(self, other):
+
+  def bounce(self, other: "Particle") -> None:
+
     """
+
     Handles the physics of a collision between two particles.
+
     """
+
     # vector from other to self
+
     delta_x = self.x - other.x
+
     delta_y = self.y - other.y
+
     distance = math.sqrt(delta_x**2 + delta_y**2)
 
+
+
     # normalized vector
+
     normal_x = delta_x / distance
+
     normal_y = delta_y / distance
 
+
+
     # move particles apart to avoid overlap
+
     nudge_x = normal_x * NUDGE
+
     nudge_y = normal_y * NUDGE
+
     while self.isColliding(other):
+
         self.x += nudge_x
+
         self.y += nudge_y
 
+
+
     # relative velocity
+
     relative_vx = self.vx - other.vx
+
     relative_vy = self.vy - other.vy
 
+
+
     # dot product of relative velocity and normal vector
+
     dot_product = relative_vx * normal_x + relative_vy * normal_y
 
+
+
     # impulse vector
+
     impulse_x = normal_x * (dot_product * 2.0)
+
     impulse_y = normal_y * (dot_product * 2.0)
 
+
+
     # update velocities
+
     self.vx = (relative_vx - impulse_x) + other.vx
+
     self.vy = (relative_vy - impulse_y) + other.vy
-  def limitSpeed(self, minSpeed, maxSpeed):
+
+  def limitSpeed(self, minSpeed: float, maxSpeed: float) -> None:
+
     mag2 = self.vx*self.vx+self.vy*self.vy;
+
     if (mag2 > (maxSpeed*maxSpeed) ):
+
       mag = math.sqrt(mag2)
+
       self.vx /= mag
+
       self.vy /= mag
+
       self.vx *= maxSpeed
+
       self.vy *= maxSpeed
 
+
+
     if (mag2 < (minSpeed*minSpeed) ):
+
       mag = math.sqrt(mag2)
+
       self.vx /= mag
+
       self.vy /= mag
+
       self.vx *= minSpeed
+
       self.vy *= minSpeed
 
+
+
 class Wall:
+
   """ used for the fence, and also the ground """
-  def __init__(self, x, y, w, h, c):
+
+  def __init__(self, x: float, y: float, w: float, h: float, c: tuple):
+
     self.x = x;
+
     self.y = y;
+
     self.w = w;
+
     self.h = h;
+
     self.c = c
-  def display(self, env, canvas):
+
+  def display(self, env, canvas: pygame.Surface) -> pygame.Surface:
+
     pygame.draw.rect(canvas, self.c, (int(env.toX(self.x-self.w/2)), int(env.toY(self.y+self.h/2)), int(env.toP(self.w)), int(env.toP(self.h))))
+
     return canvas
+
+
 
 class Game:
   """
   the main slime volley game.
   can be used in various settings, such as ai vs ai, ai vs human, human vs human
   """
-  def __init__(self, np_random=np.random):
-    self.ball = None
-    self.ground = None
-    self.fence = None
-    self.fenceStub = None
-    self.agent_left = None
-    self.agent_right = None
-    self.delayScreen = None
+  def __init__(self, np_random: np.random.Generator = np.random.default_rng()):
+    self.ball: Optional[Particle] = None
+    self.ground: Optional[Wall] = None
+    self.fence: Optional[Wall] = None
+    self.fenceStub: Optional[Particle] = None
+    self.agent_left: Optional[Agent] = None
+    self.agent_right: Optional[Agent] = None
+    self.delayScreen: Optional[DelayScreen] = None
     self.np_random = np_random
     self.reset()
-  def _create_ball(self):
+
+  def _create_ball(self) -> Particle:
     ball_vx = self.np_random.uniform(low=-20, high=20)
     ball_vy = self.np_random.uniform(low=10, high=25)
     return Particle(0, REF_W / 4, ball_vx, ball_vy, 0.5, c=BALL_COLOR)
 
-  def reset(self):
+  def reset(self) -> None:
     self.ground = Wall(0, 0.75, REF_W, REF_U, c=GROUND_COLOR)
     self.fence = Wall(0, 0.75 + REF_WALL_HEIGHT / 2, REF_WALL_WIDTH, (REF_WALL_HEIGHT - 1.5), c=FENCE_COLOR)
     self.fenceStub = Particle(0, REF_WALL_HEIGHT, 0, 0, REF_WALL_WIDTH / 2, c=FENCE_COLOR)
@@ -178,10 +308,11 @@ class Game:
     self.agent_right.updateState(self.ball, self.agent_left)
     self.delayScreen = DelayScreen()
 
-  def newMatch(self):
+  def newMatch(self) -> None:
     self.ball = self._create_ball()
     self.delayScreen.reset()
-  def step(self):
+
+  def step(self) -> int:
     """ main game loop """
     self.betweenGameControl()
     self._update_agents()
@@ -197,17 +328,17 @@ class Game:
     self._update_agent_states()
     return NO_SCORE
 
-  def _update_agents(self):
+  def _update_agents(self) -> None:
     self.agent_left.update()
     self.agent_right.update()
 
-  def _update_ball(self):
+  def _update_ball(self) -> None:
     if self.delayScreen.status():
         self.ball.applyAcceleration(0, GRAVITY)
         self.ball.limitSpeed(0, MAX_BALL_SPEED)
         self.ball.move()
 
-  def _handle_collisions(self):
+  def _handle_collisions(self) -> None:
     if self.ball.isColliding(self.agent_left):
         self.ball.bounce(self.agent_left)
     if self.ball.isColliding(self.agent_right):
@@ -215,7 +346,7 @@ class Game:
     if self.ball.isColliding(self.fenceStub):
         self.ball.bounce(self.fenceStub)
 
-  def _handle_scoring(self, score):
+  def _handle_scoring(self, score: int) -> None:
     self.newMatch()
     if score < 0:  # baseline agent won
         self.agent_left.emotion = "happy"
@@ -226,12 +357,12 @@ class Game:
         self.agent_right.emotion = "happy"
         self.agent_left.life -= 1
         
-  def _update_agent_states(self):
+  def _update_agent_states(self) -> None:
     # update internal states (the last thing to do)
     self.agent_left.updateState(self.ball, self.agent_right)
     self.agent_right.updateState(self.ball, self.agent_left)
 
-  def display(self, env, canvas):
+  def display(self, env, canvas: pygame.Surface) -> pygame.Surface:
     # background color
     # if PIXEL_MODE is True, canvas is an RGB array.
     # if PIXEL_MODE is False, canvas is viewer object
@@ -243,7 +374,8 @@ class Game:
     canvas = self.ball.display(env, canvas)
     canvas = self.ground.display(env, canvas)
     return canvas
-  def betweenGameControl(self):
+  
+  def betweenGameControl(self) -> None:
     agent = [self.agent_left, self.agent_right]
     if (self.delayScreen.life > 0):
       pass
@@ -255,3 +387,5 @@ class Game:
     else:
       agent[0].emotion = "happy"
       agent[1].emotion = "happy"
+
+  
