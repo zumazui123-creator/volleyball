@@ -1,0 +1,15 @@
+LICENSE
+README.md
+setup.py
+src/slimevolleygym/__init__.py
+src/slimevolleygym/agent.py
+src/slimevolleygym/config.py
+src/slimevolleygym/game.py
+src/slimevolleygym/mlp.py
+src/slimevolleygym/policy.py
+src/slimevolleygym/slimevolley.py
+src/slimevolleygym.egg-info/PKG-INFO
+src/slimevolleygym.egg-info/SOURCES.txt
+src/slimevolleygym.egg-info/dependency_links.txt
+src/slimevolleygym.egg-info/requires.txt
+src/slimevolleygym.egg-info/top_level.txt

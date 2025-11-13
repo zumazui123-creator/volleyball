@@ -2,7 +2,11 @@ LICENSE
 README.md
 setup.py
 slimevolleygym/__init__.py
+slimevolleygym/agent.py
+slimevolleygym/config.py
+slimevolleygym/game.py
 slimevolleygym/mlp.py
+slimevolleygym/policy.py
 slimevolleygym/slimevolley.py
 slimevolleygym.egg-info/PKG-INFO
 slimevolleygym.egg-info/SOURCES.txt

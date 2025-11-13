@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='slimevolleygym',
@@ -6,7 +6,8 @@ setup(
     keywords='games, environment, agent, rl, ai, gym',
     url='https://github.com/hardmaru/slimevolleygym',
     description='Slime Volleyball Gym Environment',
-    packages=['slimevolleygym'],
+    package_dir={'': 'src'},
+    packages=find_packages(where='src'),
     install_requires=[
         'gym>=0.9.4',
         'numpy>=1.13.0',

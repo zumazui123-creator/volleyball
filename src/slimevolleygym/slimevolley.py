@@ -47,13 +47,7 @@ def upsize_image(img):
 def downsize_image(img):
   return cv2.resize(img, (PIXEL_WIDTH, PIXEL_HEIGHT), interpolation=cv2.INTER_AREA)
 
-# conversion from space to pixels (allows us to render to diff resolutions)
-def toX(x):
-  return (x+REF_W/2)*FACTOR
-def toP(x):
-  return (x)*FACTOR
-def toY(y):
-  return WINDOW_HEIGHT - y*FACTOR
+
 
 from .game import Game
 
