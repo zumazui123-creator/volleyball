@@ -24,93 +24,47 @@ def softmax(x):
 def sample(p):
   return (np.random.rand(*p.shape) < p).astype(float)
 
-from .config import Game
+from .config import GameConfig
 
 
 
 class Model:
 
-
-
   ''' simple feedforward model '''
 
+  def __init__(self, game_config):
 
+    self.output_noise = game_config.output_noise
 
-  def __init__(self, game):
+    self.env_name = game_config.env_name
 
+    self.layer_1 = game_config.layers[0]
 
-
-    self.output_noise = game.output_noise
-
-
-
-    self.env_name = game.env_name
-
-
-
-    self.layer_1 = game.layers[0]
-
-
-
-    self.layer_2 = game.layers[1]
-
-
+    self.layer_2 = game_config.layers[1]
 
     self.rnn_mode = False
 
-
-
     self.time_input = 0
 
-
-
-    self.sigma_bias = game.noise_bias
-
-
+    self.sigma_bias = game_config.noise_bias
 
     self.sigma_factor = 0.5
 
+    if game_config.time_factor > 0:
 
-
-    if game.time_factor > 0:
-
-
-
-      self.time_factor = float(game.time_factor)
-
-
+      self.time_factor = float(game_config.time_factor)
 
       self.time_input = 1
 
+    self.input_size = game_config.input_size
 
-
-    self.input_size = game.input_size
-
-
-
-    self.output_size = game.output_size
-
-
-
-
-
-
+    self.output_size = game_config.output_size
 
     self._initialize_shapes()
 
-
-
-    self._initialize_activations(game.activation)
-
-
+    self._initialize_activations(game_config.activation)
 
     self._initialize_parameters()
-
-
-
-
-
-
 
     self.render_mode = False
 
@@ -402,7 +356,7 @@ class Model:
 
   def makeSlimePolicy(filename):
 
-    game_config = Game(env_name='SlimeVolley',
+    game_config = GameConfig(env_name='SlimeVolley',
 
       input_size=12,
 
@@ -434,7 +388,7 @@ class Model:
 
   def makeSlimePolicyLite(filename):
 
-    game_config = Game(env_name='SlimeVolley',
+    game_config = GameConfig(env_name='SlimeVolley',
 
       input_size=12,
 

@@ -7,7 +7,7 @@ from collections import namedtuple
 # game settings:
 RENDER_MODE = True
 
-Game = namedtuple('Game', ['env_name', 'time_factor', 'input_size', 'output_size', 'layers', 'activation', 'noise_bias', 'output_noise', 'rnn_mode'])
+GameConfig = namedtuple('Game', ['env_name', 'time_factor', 'input_size', 'output_size', 'layers', 'activation', 'noise_bias', 'output_noise', 'rnn_mode'])
 
 REF_W = 24*2
 REF_H = REF_W
