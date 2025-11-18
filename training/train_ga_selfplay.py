@@ -2,14 +2,18 @@
 # GA with no cross-over, just mutation, and random tournament selection
 # Not optimized for speed, and just uses a single CPU (mainly for simplicity)
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import os
 import json
 import numpy as np
 import gym
-import slimevolleygym
-import slimevolleygym.mlp as mlp
-from slimevolleygym.mlp import Model
-from slimevolleygym import multiagent_rollout as rollout
+import slimevolley
+import mlp
+from mlp import Model
+from slimevolley import multiagent_rollout as rollout
 
 # Settings
 random_seed = 612
@@ -42,7 +46,7 @@ population = np.random.normal(size=(population_size, param_count)) * 0.5 # each 
 winning_streak = [0] * population_size # store the number of wins for this agent (including mutated ones)
 
 # create the gym environment, and seed it
-env = gym.make("SlimeVolley-v0")
+env = slimevolley.SlimeVolleyEnv()
 env.seed(random_seed)
 np.random.seed(random_seed)
 

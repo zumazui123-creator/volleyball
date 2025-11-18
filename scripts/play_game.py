@@ -11,11 +11,14 @@ D - Right
 right Agent:
 Up Arrow, Left Arrow, Right Arrow
 """
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import numpy as np
 from time import sleep
 import pygame
-import slimevolleygym
+import slimevolley
 
 # game settings:
 RENDER_MODE = True
@@ -27,9 +30,9 @@ if __name__=="__main__":
   manualMode = False
   otherManualMode = False
 
-  policy = slimevolleygym.BaselinePolicy() # defaults to use RNN Baseline for player
+  policy = slimevolley.BaselinePolicy() # defaults to use RNN Baseline for player
 
-  env = slimevolleygym.SlimeVolleyEnv()
+  env = slimevolley.SlimeVolleyEnv()
   env.seed(np.random.randint(0, 10000))
 
   if RENDER_MODE:
@@ -92,7 +95,7 @@ if __name__=="__main__":
 
     # make the game go slower for human players to be fair to humans.
     if (manualMode or otherManualMode):
-      if slimevolleygym.PIXEL_MODE:
+      if slimevolley.PIXEL_MODE:
         sleep(0.01)
       else:
         sleep(0.02)

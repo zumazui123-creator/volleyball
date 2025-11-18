@@ -3,9 +3,13 @@
 # run with
 # mpirun -np 96 python train_ppo_mpi.py (replace 96 with number of CPU cores you have.)
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import os
 import gym
-import slimevolleygym
+import slimevolley
 
 from mpi4py import MPI
 from stable_baselines.common import set_global_seeds
@@ -20,7 +24,7 @@ EVAL_EPISODES = 1000
 LOGDIR = "ppo1_mpi"
 
 def make_env(seed):
-  env = gym.make("SlimeVolley-v0")
+  env = slimevolley.SlimeVolleyEnv()
   env.seed(seed)
   return env
 

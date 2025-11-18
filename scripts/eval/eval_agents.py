@@ -17,6 +17,10 @@ ga: Genetic algorithm with tiny network trained using simple tournament selectio
 random: random action agent
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import warnings
 # numpy warnings because of tensorflow
 warnings.filterwarnings("ignore", category=FutureWarning, module='tensorflow')
@@ -26,9 +30,9 @@ import gym
 import os
 import numpy as np
 import argparse
-import slimevolleygym
-from slimevolleygym.mlp import makeSlimePolicy, makeSlimePolicyLite # simple pretrained models
-from slimevolleygym import BaselinePolicy
+import slimevolley
+from mlp import makeSlimePolicy, makeSlimePolicyLite # simple pretrained models
+from policy import BaselinePolicy
 from time import sleep
 
 #import cv2
@@ -135,12 +139,12 @@ if __name__=="__main__":
   args = parser.parse_args()
 
   if args.day:
-    slimevolleygym.setDayColors()
+    slimevolley.setDayColors()
 
   if args.pixel:
-    slimevolleygym.setPixelObsMode()
+    slimevolley.setPixelObsMode()
 
-  env = gym.make("SlimeVolley-v0")
+  env = slimevolley.SlimeVolleyEnv()
   env.seed(args.seed)
 
   render_mode = args.render

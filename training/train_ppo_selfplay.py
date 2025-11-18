@@ -2,9 +2,13 @@
 
 # Simple self-play PPO trainer
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import os
 import gym
-import slimevolleygym
+import slimevolley
 import numpy as np
 
 from stable_baselines.ppo1 import PPO1
@@ -25,7 +29,7 @@ RENDER_MODE = False # set this to false if you plan on running for full 1000 tri
 
 LOGDIR = "ppo1_selfplay"
 
-class SlimeVolleySelfPlayEnv(slimevolleygym.SlimeVolleyEnv):
+class SlimeVolleySelfPlayEnv(slimevolley.SlimeVolleyEnv):
   # wrapper over the normal single player env, but loads the best self play model
   def __init__(self):
     super(SlimeVolleySelfPlayEnv, self).__init__()

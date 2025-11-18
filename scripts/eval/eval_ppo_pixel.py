@@ -2,6 +2,10 @@
 
 # test ppo1-trained CNN agent on pixel version of the task
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import warnings
 # numpy warnings because of tensorflow
 warnings.filterwarnings("ignore", category=FutureWarning, module='tensorflow')
@@ -10,8 +14,8 @@ warnings.filterwarnings("ignore", category=UserWarning, module='gym')
 import numpy as np
 import argparse
 import gym
-import slimevolleygym
-from slimevolleygym import FrameStack, render_atari
+import slimevolley
+from slimevolley import FrameStack, render_atari
 
 from stable_baselines.common.policies import CnnPolicy
 from stable_baselines.common.atari_wrappers import ClipRewardEnv, NoopResetEnv, MaxAndSkipEnv, WarpFrame
@@ -33,7 +37,7 @@ if RENDER_ATARI or RENDER_MODE:
   from gym.envs.classic_control import rendering as rendering
 
 def make_env(seed):
-  env = gym.make("SlimeVolleyNoFrameskip-v0")
+  env = slimevolley.SlimeVolleyAtariEnv()
   env = NoopResetEnv(env, noop_max=30)
   env = MaxAndSkipEnv(env, skip=4)
   env = WarpFrame(env)

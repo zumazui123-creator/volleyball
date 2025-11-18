@@ -7,6 +7,10 @@ Evaluate PPO1 policy (MLP input_dim x 64 x 64 x output_dim policy) against built
 
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import warnings
 # numpy warnings because of tensorflow
 warnings.filterwarnings("ignore", category=FutureWarning, module='tensorflow')
@@ -16,7 +20,7 @@ import gym
 import numpy as np
 import argparse
 
-import slimevolleygym
+import slimevolley
 from stable_baselines.common.policies import MlpPolicy
 from stable_baselines import PPO1
 
@@ -49,7 +53,7 @@ if __name__=="__main__":
   args = parser.parse_args()
   render_mode = args.render
 
-  env = gym.make("SlimeVolley-v0")
+  env = slimevolley.SlimeVolleyEnv()
 
   # the yellow agent:
   print("Loading", args.model_path)

@@ -63,46 +63,6 @@ class Button:
                 return True
         return False
 
-# --- Main Application Class ---
-class SlimeVolleyGUI:
-    def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Slime Volley AI Lab for Kids")
-        self.clock = pygame.time.Clock()
-        self.font = pygame.font.Font(None, 36)
-        self.small_font = pygame.font.Font(None, 28)
-
-        self.input_boxes = {
-            "jump_threshold": InputBox(50, 100, 200, 32, "0.5"),
-            "left_threshold": InputBox(50, 180, 200, 32, "-0.5"),
-            "right_threshold": InputBox(50, 260, 200, 32, "0.5"),
-        }
-
-        self.buttons = {
-            "train": Button(50, 340, 200, 40, "Train Agent"),
-            "play": Button(50, 400, 200, 40, "Play Game"),
-            "play_vs_agent": Button(50, 460, 200, 40, "Play vs Agent"),
-        }
-
-    def run(self):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                for box in self.input_boxes.values():
-                    box.handle_event(event)
-                for name, button in self.buttons.items():
-                    if button.is_clicked(event):
-                        self.handle_button_click(name)
-
-            self.draw()
-            self.clock.tick(60)
-
-        pygame.quit()
-        sys.exit()
-
 import json
 
 # --- SimpleRuleBasedAgent Class ---

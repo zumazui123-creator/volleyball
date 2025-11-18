@@ -6,18 +6,14 @@
 # run with
 # mpirun -np 96 python train_ppo_pixel.py (replace 96 with number of CPU cores you have.)
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import os
 import gym
-import slimevolleygym
-
-from mpi4py import MPI
-from stable_baselines.common import set_global_seeds
-from stable_baselines.common.atari_wrappers import ClipRewardEnv, NoopResetEnv, MaxAndSkipEnv, WarpFrame
-from stable_baselines.common.policies import CnnPolicy
-from stable_baselines import bench, logger, PPO1
-from stable_baselines.common.callbacks import CheckpointCallback, EvalCallback
-
-from slimevolleygym import FrameStack # doesn't use Lazy Frames, easier to debug
+import slimevolley
+from slimevolley import FrameStack # doesn't use Lazy Frames, easier to debug
 
 
 NUM_TIMESTEPS = 2000000000
@@ -30,7 +26,7 @@ LOGDIR = "ppo1_cnn" # moved to zoo afterwards.
 def make_env(seed):
   # almost the same a typical Atari processing for CNN agent.
   # (I removed reward clipping, but used survival reward bonus)
-  env = gym.make("SlimeVolleySurvivalNoFrameskip-v0")
+  env = slimevolley.SlimeVolleySurvivalAtariEnv()
   env = NoopResetEnv(env, noop_max=30)
   env = MaxAndSkipEnv(env, skip=4)
   env = WarpFrame(env)
@@ -41,7 +37,7 @@ def make_env(seed):
 
 
 def make_eval_env(seed):
-  env = gym.make("SlimeVolleyNoFrameskip-v0")
+  env = slimevolley.SlimeVolleyAtariEnv()
   env = NoopResetEnv(env, noop_max=30)
   env = MaxAndSkipEnv(env, skip=4)
   env = WarpFrame(env)

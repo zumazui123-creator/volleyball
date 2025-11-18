@@ -3,10 +3,14 @@
 # Train single CPU PPO1 on slimevolley.
 # Should solve it (beat existing AI on average over 1000 trials) in 3 hours on single CPU, within 3M steps.
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import os
 import gym
-import slimevolleygym
-from slimevolleygym import SurvivalRewardEnv
+import slimevolley
+from slimevolley import SurvivalRewardEnv
 
 from stable_baselines.ppo1 import PPO1
 from stable_baselines.common.policies import MlpPolicy
@@ -21,7 +25,7 @@ LOGDIR = "ppo1" # moved to zoo afterwards.
 
 logger.configure(folder=LOGDIR)
 
-env = gym.make("SlimeVolley-v0")
+env = slimevolley.SlimeVolleyEnv()
 env.seed(SEED)
 
 # take mujoco hyperparams (but doubled timesteps_per_actorbatch to cover more steps.)
