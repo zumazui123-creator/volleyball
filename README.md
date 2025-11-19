@@ -1,336 +1,108 @@
 # Slime Volleyball Gym Environment
 
-
 <p align="left">
-  <img width="100%" src="https://otoro.net/img/slimegym/pixel.gif"></img>
+  <img width="100%" src="https://otoro.net/img/slimegym/pixel.gif">
 </p>
 
-Slime Volleyball is a game created in the early 2000s by an unknown author.
+Slime Volleyball is a simple and addictive physics-based game. This repository provides a gym environment for single and multi-agent reinforcement learning experiments.
 
-*“The physics of the game are a little ‘dodgy,’ but its simple gameplay made it instantly addictive.”*<br/>
+The agent's goal is to score by making the ball land on the opponent's ground. Each agent has five lives. The game ends when an agent loses all lives or after 3000 timesteps. The agent gets a reward of +1 for scoring and -1 when the opponent scores.
 
----
+This environment is a Python port of the original [Neural Slime Volleyball](https://otoro.net/slimevolley/) JavaScript game, designed for fast and lightweight reinforcement learning research.
 
-**Update (May 12, 2022):** This environment has been ported over to [EvoJAX](https://github.com/google/evojax), hardware-accelerated neuroevolution toolkit that allows SlimeVolley to run on GPUs, enabling training time in minutes rather than hours.
+## Key Features
 
----
-
-SlimeVolleyGym is a simple gym environment for testing single and multi-agent reinforcement learning algorithms.
-
-The game is very simple: the agent's goal is to get the ball to land on the ground of its opponent's side, causing its opponent to lose a life. Each agent starts off with five lives. The episode ends when either agent loses all five lives, or after 3000 timesteps has passed. An agent receives a reward of +1 when its opponent loses or -1 when it loses a life.
-
-This environment is based on [Neural Slime Volleyball](https://otoro.net/slimevolley/), a JavaScript game I created in [2015](https://blog.otoro.net/2015/03/28/neural-slime-volleyball/) that used self-play and evolution to train a simple neural network agent to play the game better than most human players. I decided to port it over to Python as a lightweight and fast gym environment as a testbed for more advanced RL methods such as multi-agent, self-play, continual learning, and imitation learning algorithms.
-
-### Note: Regarding Libraries
-
-- The pre-trained PPO models were trained using [stable-baselines](https://github.com/hill-a/stable-baselines) v2.10, *not* [stable-baselines3](https://github.com/DLR-RM/stable-baselines3).
-
-- The examples were developed based on Gym version 0.19.0 or earlier. I tested 0.20.0 briefly and it seems to work, but later versions of Gym have API-breaking changes.
-
-- I used pyglet library 0.15.7 or earlier while developing this, but have not tested whether the package works for the latest versions of pyglet.
-
-### Notable features
-
-- Only dependencies are gym and numpy. No other libraries needed to run the env, making it less likely to break.
-
-- In the normal single agent setting, the agent plays against a tiny 120-parameter [neural network](https://otoro.net/slimevolley/) baseline agent from 2015. This opponent can easily be replaced by another policy to enable a multi-agent or self-play environment.
-
-- Runs at around 12.5K timesteps per second on 2015 MacBook (core i7) for state-space observations, resulting in faster iteration in experiments.
-
-- A [tutorial](TRAINING.md) demonstrating several different training methods (e.g. single agent, self-play, evolution) that require only a single CPU machine in most cases. Potentially useful for educational purposes.
-
-- A pixel observation mode is available. Observations are directly rendered to numpy arrays and runs on headless cloud machines. The pixel version of the environment mimics gym environments based on the Atari Learning Environment and has been tested on several Atari gym wrappers and RL models tuned for Atari.
-
-- The opponent's observation is made available in the optional `info` object returned by `env.step()` for both state and pixel settings. The observations are constructed as if the agent is always playing on the right court, even if it is playing on the left court, so an agent trained to play on one side can play on the other side without adjustment.
-
-This environment is meant to complement existing simple benchmark tasks, such as CartPole, Lunar Lander, Bipedal Walker, Car Racing, and continuous control tasks (MuJoCo / PyBullet / DM Control), but with an extra game-playing element. The motivation is to easily enable trained agents to play against each other, and also let us easily train agents directly in a multi-agent setting, thus adding an extra dimension for evaluating an agent's performance.
+- **Lightweight:** Only requires `gym` and `numpy`.
+- **Single and Multi-Agent:** Supports both single-player and multi-agent (self-play) scenarios.
+- **Fast:** Runs at approximately 12,500 timesteps per second on a modern CPU for state-based observations.
+- **Educational:** Includes a [tutorial](docs/TRAINING.md) on various training methods, suitable for learning RL concepts.
+- **Pixel and State Observations:** Supports both state-vector and pixel-based observations for testing different types of RL agents.
 
 ## Installation
 
-Install from pip package, if you only want to use the gym environment, but don't want the example usage scripts:
+To get started, clone the repository and install the dependencies:
 
-```
-pip install slimevolleygym
-```
-
-Install from the repo, if you want basic usage demos, training scripts, pre-trained models:
-
-```
+```bash
 git clone https://github.com/hardmaru/slimevolleygym.git
 cd slimevolleygym
 pip install -e .
 ```
 
-## Basic Usage
+It is recommended to use a virtual environment to manage dependencies.
 
-After installing from the repo, you can test the environment by running:
+## How to Play
 
+You can play the game against the built-in AI or another human player.
+
+### Human vs. AI
+
+To play as the left agent against the AI, run:
+
+```bash
+python scripts/play_one_human.py
 ```
-python scripts/test/test_state.py
-```
 
-## Playing the Game
+**Controls:**
+- **W**: Jump
+- **A**: Move Left
+- **D**: Move Right
 
-You can play the game against the baseline agent by running:
+### Human vs. Human
 
-```
+To play with another human, run:
+
+```bash
 python scripts/play_game.py
 ```
 
-<p align="left">
-  <img width="50%" src="https://otoro.net/img/slimegym/state.gif"></img>
-  <!--<br/><i>State-space observation mode.</i>-->
-</p>
+**Controls:**
+- **Left Agent:** W, A, D
+- **Right Agent:** Up, Left, Right Arrow Keys
 
-You can control the agent on the right using the arrow keys, or the agent on the left using (A, W, D).
+## Project Structure
 
-Similarly, `scripts/test/test_pixel.py` allows you to play in the pixelated environment, and `scripts/test/test_atari.py` lets you play the game by observing the preprocessed stacked frames (84px x 84px x 4 frames) typically done for Atari RL agents:
+```
+├───assets/         # Pre-trained models
+├───docs/           # Documentation and figures
+├───scripts/        # Scripts for playing, evaluation, and testing
+├───training/       # Scripts for training agents
+├───tests/          # Test files for the game logic
+├───agent.py        # Agent class
+├───config.py       # Configuration file
+├───game.py         # Game logic
+├───mlp.py          # Multi-Layer Perceptron model
+├───policy.py       # Baseline policy
+├───slimevolley.py  # Main environment file
+└───utils.py        # Utility functions
+```
 
-<p align="left">
-  <img width="50%" src="https://media.giphy.com/media/W3NItV6PINmbgUFKPf/giphy.gif"></img>
-  <br/><i>Atari gym wrappers combine 4 frames as one observation.</i>
-</p>
+## Training and Evaluation
 
-## Training Agents
+The `training` directory contains scripts for training agents using various methods, including PPO, CMA-ES, and Genetic Algorithms. The `scripts/eval` directory contains scripts for evaluating trained agents against each other.
 
-The `training` directory contains scripts for training agents using different methods like PPO, CMA-ES, and GA.
-The `TRAINING.md` file provides a detailed tutorial on how to train agents using these methods.
-
-Here is a summary of the training process:
-
-*   **Train against baseline policy:** You can train an agent to play against the built-in baseline policy using PPO or CMA-ES.
-*   **Self-Play:** You can train agents to play against a version of itself, so they can become incrementally better players over time.
-*   **Cooperative Self-Play:** You can train agents to cooperate with each other to achieve some mutually beneficial game state.
-
-For more details, please refer to the [TRAINING.md](docs/TRAINING.md) tutorial.
-
-## For Young Coders: Create Your Own AI Player!
-
-Hey young coders! Want to make your own smart player for Slime Volleyball? It's super fun and easier than you think!
-
-An **AI player** (or "agent") is like a robot brain that decides what to do in the game. Instead of you pressing keys, your code tells the player to jump, move left, or move right.
-
-Here’s how you can start making your own AI:
-
-1.  **Understand the Game:** Play the game a few times using the keyboard (`python scripts/play_game.py`). See how the ball moves, how your player jumps, and how the opponent plays. What makes a good move?
-
-2.  **Look at the Code:** Open the file `src/slimevolleygym/policy.py`. This file has the "brain" of the computer player you play against. It's called `BaselinePolicy`.
-
-3.  **Make Your Own Simple Brain:**
-    *   You can create a new Python file, for example, `my_agent.py` in the `scripts` folder.
-    *   Inside `my_agent.py`, you'll need to write a function that looks at the game (`obs` for "observation") and decides what action to take.
-    *   A very simple AI might just try to jump when the ball is close!
-
-    Here’s a super simple idea for your `my_agent.py`:
-
-    ```python
-    import numpy as np
-
-    class MySimpleAgent:
-        def predict(self, obs):
-            # obs is a list of numbers that tell you about the game
-            # obs[4] is the ball's x-position, obs[5] is the ball's y-position
-            
-            action = [0, 0, 0] # [move_left, move_right, jump]
-
-            # If the ball is high up, maybe jump!
-            if obs[5] > 0.5: # This is just an example number, try different ones!
-                action[2] = 1 # Make the player jump
-
-            # You can add more rules here!
-            # Like, if the ball is to the left, move left:
-            # if obs[4] < 0:
-            #     action[0] = 1
-
-            return action
-    ```
-
-4.  **Try Your Agent in the Game:**
-    *   You'll need to tell the game to use your agent instead of the `BaselinePolicy`. This is a bit more advanced, but you can look at `scripts/play_game.py` to see how `BaselinePolicy` is loaded. You would replace `slimevolleygym.BaselinePolicy()` with `MySimpleAgent()`.
-
-5.  **Experiment and Have Fun!**
-    *   Change the numbers in your rules.
-    *   Add new rules (e.g., "if the ball is very low, don't jump").
-    *   Can you make an agent that beats the computer?
-
-Don't worry if it's hard at first. Programming is all about trying things out and learning from your mistakes. The most important thing is to have fun and be creative!
-
+For a detailed guide on training and evaluation, please refer to the [TRAINING.md](docs/TRAINING.md) tutorial.
 
 ## Environments
 
-There are two types of environments: state-space observation or pixel observations:
+The environment comes in two main flavors: state-based and pixel-based observations.
 
-|Environment Id|Observation Space|Action Space
-|---|---|---|
-|SlimeVolley-v0|Box(12)|MultiBinary(3)
-|SlimeVolleyPixel-v0|Box(84, 168, 3)|MultiBinary(3)
-|SlimeVolleyNoFrameskip-v0|Box(84, 168, 3)|Discrete(6)
+| Environment ID                | Observation Space | Action Space    |
+| ----------------------------- | ----------------- | --------------|
+| `SlimeVolley-v0`              | `Box(12)`         | `MultiBinary(3)` |
+| `SlimeVolleyPixel-v0`         | `Box(84, 168, 3)` | `MultiBinary(3)` |
+| `SlimeVolleyNoFrameskip-v0`   | `Box(84, 168, 3)` | `Discrete(6)`   |
 
-`SlimeVolleyNoFrameskip-v0` identical to `SlimeVolleyPixel-v0` except that the action space is now a one-hot vector typically used in Atari RL agents.
+### State-Space Observation
 
-In state-space observation, the 12-dim vector corresponds to the following states:
+The 12-dimensional state vector represents the positions and velocities of the agents and the ball:
 
-<img src="https://render.githubusercontent.com/render/math?math=\left(x_{agent}, y_{agent}, \dot{x}_{agent}, \dot{y}_{agent}, x_{ball}, y_{ball}, \dot{x}_{ball}, \dot{y}_{ball}, x_{opponent}, y_{opponent}, \dot{x}_{opponent}, \dot{y}_{opponent}\right)"></img>
+<img src="https://render.githubusercontent.com/render/math?math=\left(x_{agent}, y_{agent}, \dot{x}_{agent}, \dot{y}_{agent}, x_{ball}, y_{ball}, \dot{x}_{ball}, \dot{y}_{ball}, x_{opponent}, y_{opponent}, \dot{x}_{opponent}, \dot{y}_{opponent}\right)">
 
-The origin point (0, 0) is located at the bottom of the fence.
-
-Both state and pixel observations are presented assuming the agent is playing on the right side of the screen.
-
-### Using Multi-Agent Environment
-
-It is straight forward to modify the gym loop to enable multi-agent or self-play. Here is a basic gym loop:
-
-```python
-import gym
-import slimevolleygym
-
-env = gym.make("SlimeVolley-v0")
-
-obs = env.reset()
-done = False
-total_reward = 0
-
-while not done:
-  action = my_policy(obs)
-  obs, reward, done, info = env.step(action)
-  total_reward += reward
-  env.render()
-
-print("score:", total_reward)
-```
-
-The `info` object contains extra information including the observation for the opponent:
-
-```
-info = {
-  'ale.lives': agent's lives left,
-  'ale.otherLives': opponent's lives left,
-  'otherObs': opponent's observations,
-  'state': agent's state (same as obs in state mode),
-  'otherState': opponent's state (same as otherObs in state mode),
-}
-```
-
-This modification allows you to evaluate `policy1` against `policy2`
-
-```python
-obs1 = env.reset()
-obs2 = obs1 # both sides always see the same initial observation.
-
-done = False
-total_reward = 0
-
-while not done:
-
-  action1 = policy1(obs1)
-  action2 = policy2(obs2)
-
-  obs1, reward, done, info = env.step(action1, action2) # extra argument
-  obs2 = info['otherObs']
-
-  total_reward += reward
-  env.render()
-
-print("policy1's score:", total_reward)
-print("policy2's score:", -total_reward)
-```
-
-Note that in both state and pixel modes, `otherObs` is given as if the agent is playing on the right side of the screen, so one can swap an agent to play either side without modifying the agent.
-
-<p align="left">
-  <img width="50%" src="https://media.giphy.com/media/IeA1Nv2WZSOoZJrh6Z/giphy.gif"></img>
-  <br/><i>Opponent's observation is rendered in the smaller window.</i>
-</p>
-
-One can consider replacing `policy2` with earlier versions of your agent (self-play) and wrapping the multi-agent environment as if it were a single-agent environment so that it can use standard RL algorithms. There are several examples of these techniques described in more detail in the [TRAINING.md](TRAINING.md) tutorial.
-
-## Evaluating against other agents
-
-Several pre-trained agents (`ppo`, `cma`, `ga`, `baseline`) are discussed in the [TRAINING.md](TRAINING.md) tutorial.
-
-You can run them against each other using the following command:
-
-```
-python eval_agents.py --left ppo --right cma --render
-```
-
-<p align="left">
-  <!--<img width="50%" src="https://media.giphy.com/media/VGPfocuIS7YYh6kyMv/giphy.gif"></img>-->
-  <img width="50%" src="https://media.giphy.com/media/WsMaF3xeATeiCv7dBq/giphy.gif"></img>
-  <br/><i>Evaluating PPO agent (left) against CMA-ES (right).</i>
-</p>
-
-It should be relatively straightforward to modify `eval_agents.py` to include your custom agent.
-
-## Leaderboard
-
-Below are scores achieved by various algorithms and links to their implementations. Feel free to add yours here:
-
-### SlimeVolley-v0
-
-|Method|Average Score|Episodes|Other Info
-|---|---|---|---|
-|Maximum Possible Score|5.0|  | 
-|PPO | 1.377 ± 1.133 | 1000 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|CMA-ES | 1.148 ± 1.071 | 1000 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|GA (Self-Play) | 0.353 ± 0.728 | 1000 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|CMA-ES (Self-Play) | -0.071 ± 0.827 | 1000 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|PPO (Self-Play) | -0.371 ± 1.085 | 1000 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|Random Policy | -4.866 ± 0.372 | 1000 | 
-|[Add Method](https://github.com/hardmaru/slimevolleygym/edit/master/README.md) |  |  |  
-
-### SlimeVolley-v0 (Sample Efficiency)
-
-For sample efficiency, we can measure how many timesteps it took to train an agent that can achieve a positive average score (over 1000 episodes) against the built-in baseline policy:
-
-|Method| Timesteps (Best) | Timesteps (Median)| Trials | Other Info
-|---|---|---|---|---|
-|PPO | 1.274M | 2.998M | 17 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|Data-efficient Rainbow | 0.750M | 0.751M | 3 | [link](https://github.com/pfnet/pfrl/blob/master/examples/slimevolley/README.md)
-|[Add Method](https://github.com/hardmaru/slimevolleygym/edit/master/README.md) |  |  |  | 
-
-### SlimeVolley-v0 (Against Other Agents)
-
-Table of average scores achieved versus agents other than the default baseline policy ([1000 episodes](https://github.com/hardmaru/slimevolleygym/blob/master/eval_agents.py)):
-
-|Method|Baseline|PPO|CMA-ES|GA (Self-Play)| Other Info
-|---|---|---|---|---|---|
-|PPO |  1.377 ± 1.133 | — |  0.133 ± 0.414 | -3.128 ± 1.509 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|CMA-ES | 1.148 ± 1.071 | -0.133 ± 0.414 | — | -0.301 ± 0.618 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|GA (Self-Play) | 0.353 ± 0.728  | 3.128 ± 1.509 | 0.301 ± 0.618 | — | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|CMA-ES (Self-Play) | -0.071 ± 0.827  |  -0.749 ± 0.846 |  -0.351 ± 0.651 |  -4.923 ± 0.342 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|PPO (Self-Play) | -0.371 ± 1.085  | 0.119 ± 1.46 |  -2.304 ± 1.392 |  -0.42 ± 0.717 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|[Add Method](https://github.com/hardmaru/slimevolleygym/edit/master/README.md) |  |  |
-
-It is interesting to note that while GA (Self-Play) did not perform as well against the baseline policy compared to PPO and CMA-ES, it is a superior policy if evaluated against these methods that trained directly against the baseline policy.
-
-### SlimeVolleyPixel-v0
-
-Results for pixel observation version of the environment (`SlimeVolleyPixel-v0` or `SlimeVolleyNoFrameskip-v0`):
-
-|Pixel Observation|Average Score|Episodes|Other Info
-|---|---|---|---|
-|Maximum Possible Score|5.0| | |
-|PPO | 0.435 ± 0.961 | 1000 | [link](https://github.com/hardmaru/slimevolleygym/blob/master/TRAINING.md)
-|Rainbow | 0.037 ± 0.994 | 1000 | [link](https://github.com/hardmaru/RainbowSlimeVolley)
-|A2C | -0.079 ± 1.091 | 1000 | [link](https://github.com/hardmaru/rlzoo)
-|ACKTR | -1.183 ± 1.480 | 1000 | [link](https://github.com/hardmaru/rlzoo)
-|ACER | -1.789 ± 1.632 | 1000 | [link](https://github.com/hardmaru/rlzoo)
-|DQN | -4.091 ± 1.242 | 1000 | [link](https://github.com/hardmaru/rlzoo)
-|Random Policy | -4.866 ± 0.372 | 1000 | 
-|[Add Method](https://github.com/hardmaru/slimevolleygym/edit/master/README.md) |  | (>= 1000) | 
-
-## Publications
-
-If you have publications, articles, projects, blog posts that use this environment, feel free to add a link here via a [PR](https://github.com/hardmaru/slimevolleygym/edit/master/README.md).
+The origin (0, 0) is at the bottom of the fence.
 
 ## Citation
 
-<!--<p align="left">
-  <img width="100%" src="https://media.giphy.com/media/WsMaF3xeATeiCv7dBq/giphy.gif"></img></img>
-</p>-->
-
-Please use this BibTeX to cite this repository in your publications:
+If you use this environment in your research, please cite it as follows:
 
 ```
 @misc{slimevolleygym,
