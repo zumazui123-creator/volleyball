@@ -1,7 +1,7 @@
 import numpy as np
 import json
 import os
-from .config import ACTION_THRESHOLD
+from config import ACTION_THRESHOLD
 
 class BaselinePolicy:
   """ Tiny RNN policy with only 120 parameters of otoro.net/slimevolley agent """
@@ -19,7 +19,7 @@ class BaselinePolicy:
     self.prevOutputState = np.zeros(self.nOutput)
 
     # Load weights and biases from JSON file
-    model_path = os.path.join(os.path.dirname(__file__), '..', '..', 'assets', 'models', 'baseline_policy.json')
+    model_path = os.path.join(os.path.dirname(__file__), 'assets', 'models', 'baseline_policy.json')
     with open(model_path, 'r') as f:
         model_data = json.load(f)
     

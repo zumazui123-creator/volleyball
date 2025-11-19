@@ -79,10 +79,10 @@ def half_circle(surface, x, y, r, color, dir):
     pygame.draw.circle(surface, color, (int(x), int(y)), int(r))
 
     # Draw a rectangle over half of the circle with the background color
-    if dir == -1: # Left agent, now facing down
-        # The rectangle will cover the top half
+    if dir == -1: # Left agent, now facing up
+        # The rectangle will cover the bottom half
         rect_x = x - r
-        rect_y = y - r
+        rect_y = y
         rect_width = 2 * r
         rect_height = r
     else: # Right agent, now facing up

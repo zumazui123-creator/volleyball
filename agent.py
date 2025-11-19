@@ -1,7 +1,7 @@
 import math
 import numpy as np
-from .config import *
-from .config import half_circle
+from config import *
+from config import half_circle
 import pygame.draw
 
 class RelativeState:

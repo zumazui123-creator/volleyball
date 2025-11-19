@@ -10,6 +10,7 @@ import gymnasium as gym
 import slimevolleygym
 from time import sleep
 import pygame
+import cv2
 
 if __name__=="__main__":
 

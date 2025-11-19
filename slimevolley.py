@@ -22,7 +22,7 @@ import numpy as np
 import cv2 # installed with gym anyways
 from collections import deque
 import pygame
-from .config import *
+from config import *
 
 np.set_printoptions(threshold=20, precision=3, suppress=True, linewidth=200)
 
@@ -34,13 +34,13 @@ def downsize_image(img):
 
 
 
-from .game import Game
+from game import Game
 
-from .agent import Agent
+from agent import Agent
 
-from .policy import BaselinePolicy
+from policy import BaselinePolicy
 
-from .config import *
+from config import *
 
 
 
