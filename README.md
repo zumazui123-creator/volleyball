@@ -11,7 +11,6 @@ The agent's goal is to score by making the ball land on the opponent's ground. E
 This environment is a Python port of the original [Neural Slime Volleyball](https://otoro.net/slimevolley/) JavaScript game, designed for fast and lightweight reinforcement learning research.
 
 ## Key Features
-
 - **Lightweight:** Only requires `gym` and `numpy`.
 - **Single and Multi-Agent:** Supports both single-player and multi-agent (self-play) scenarios.
 - **Fast:** Runs at approximately 12,500 timesteps per second on a modern CPU for state-based observations.
